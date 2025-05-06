@@ -8,3 +8,8 @@ https://www.youtube.com/watch?v=hDKCxebp88A
 
 The data set is provided in Kaggle:  
 https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package
+
+
+Folder **data** contains original data file downloaded from Kaggle.
+
+Folder **dslc_documentation** contains Jupyter Notebooks with changes done to the data set in order to conduct analysis.

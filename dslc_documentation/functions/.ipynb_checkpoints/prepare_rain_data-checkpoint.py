@@ -5,7 +5,6 @@ def prepare_rain_data(
     import pandas as pd
     import numpy as np
     from find_lat_long import find_lat_long
-    from find_state import find_state
     
     # load original data frame
     rain_data_clean = pd.read_csv("E:\\ML\\rain-in-Australia\\data\\weatherAUS.csv")
@@ -38,7 +37,7 @@ def prepare_rain_data(
     rain_data_clean['RainToday'] = rain_data_clean['RainToday'].astype('boolean')
     rain_data_clean['RainTomorrow'] = rain_data_clean['RainTomorrow'].astype('boolean')
 
-    # calculate sin and cos transformation for wind direction if required    
+    # calculate sin and cos transformation for wind direction:    
     # Map 16 compass directions to degrees (22.5° intervals)
     if wind_direction_transformation == True:
         direction_to_degrees_16 = {
@@ -94,23 +93,6 @@ def prepare_rain_data(
     location_date_combinations_df = pd.DataFrame(index=location_date_combinations).reset_index()
     rain_data_clean = location_date_combinations_df.merge(rain_data_clean, on=["Date", "Location"], how="left")
 
-    # add state for each location
-    state_df = find_state(rain_data_clean['Location'].unique())
-
-    # update unknown states manually
-    state_df.loc[state_df['Location'] == 'Norfolk Island', 'State'] = 'Island'
-    state_df.loc[state_df['Location'] == 'Canberra', 'State'] = 'New South Wales'
-    state_df.loc[state_df['Location'] == 'Tuggeranong', 'State'] = 'New South Wales'
-    state_df.loc[state_df['Location'] == 'Mount Ginini', 'State'] = 'New South Wales'
-    state_df.loc[state_df['Location'] == 'Alice Springs', 'State'] = 'Northern Territory'
-    state_df.loc[state_df['Location'] == 'Darwin', 'State'] = 'Northern Territory'
-    state_df.loc[state_df['Location'] == 'Katherine', 'State'] = 'Northern Territory'
-    state_df.loc[state_df['Location'] == 'Uluru', 'State'] = 'Northern Territory'
-
-    # add state column to main data frame
-    rain_data_clean = rain_data_clean.merge(state_df, on = 'Location', how = 'left')
-
-    # convert location to latitude / longitude data if required
     if location_transformation == True:
    
         # use custom function to find latitude and longitude for each weather station

@@ -19,6 +19,6 @@ def find_lat_long(cities):
         else:
             latitude.append("No latitude found")
             longitude.append("No longitude found")
-
+    
     return latitude, longitude
         

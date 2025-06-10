@@ -1,5 +1,8 @@
 # cities should have a list of correct city names
 def find_lat_long(cities):
+    
+    import time
+    
     # Create an empty list to gather latitude and longitude data
     latitude = []
     longitude = []
@@ -19,6 +22,8 @@ def find_lat_long(cities):
         else:
             latitude.append("No latitude found")
             longitude.append("No longitude found")
+            
+        time.sleep(1)
     
     return latitude, longitude
         

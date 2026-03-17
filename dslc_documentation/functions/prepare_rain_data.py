@@ -8,8 +8,9 @@ def prepare_rain_data(
     from find_state import find_state
     
     # load original data frame
-    rain_data_clean = pd.read_csv("E:\\ML\\rain-in-Australia\\data\\weatherAUS.csv")
-
+    rain_data_clean = pd.read_csv("D:\\Projects\\rain-in-Australia\\data\\weatherAUS.csv")
+    print("Data loaded.")
+    
     # update location name
     rain_data_clean.replace('BadgerysCreek', 'Badgerys Creek', inplace = True)
     rain_data_clean.replace('CoffsHarbour', 'Coffs Harbour', inplace = True)
@@ -29,7 +30,8 @@ def prepare_rain_data(
     rain_data_clean.replace('Albury', 'Albury Airport', inplace = True)
     rain_data_clean.replace('Portland', 'Portland Airport', inplace = True)
     rain_data_clean.replace('Walpole', 'North Walpole', inplace = True)
-
+    print("Location names updated.")
+    
     # update data type
     rain_data_clean["Date"] = pd.to_datetime(rain_data_clean["Date"])
     rain_data_clean['RainToday'] = rain_data_clean['RainToday'].map({'No': False, 'Yes': True})
@@ -37,6 +39,7 @@ def prepare_rain_data(
     # Then convert to nullable boolean dtype
     rain_data_clean['RainToday'] = rain_data_clean['RainToday'].astype('boolean')
     rain_data_clean['RainTomorrow'] = rain_data_clean['RainTomorrow'].astype('boolean')
+    print("Data types updated.")
 
     # calculate sin and cos transformation for wind direction if required    
     # Map 16 compass directions to degrees (22.5° intervals)
@@ -59,6 +62,7 @@ def prepare_rain_data(
             'NW': 315,
             'NNW': 337.5
         }
+        print("Wind direction transformed to numerical values.")
 
         # Convert compass to degrees
         rain_data_clean['WindGustDir_deg'] = rain_data_clean['WindGustDir'].map(direction_to_degrees_16)
@@ -89,6 +93,7 @@ def prepare_rain_data(
     all_dates = pd.date_range(start = '2007-11-01', end = '2017-06-25')
     all_dates = pd.DataFrame(all_dates)
 
+
     location_date_combinations = pd.MultiIndex.from_product([all_dates[0], rain_data_clean['Location'].unique()],
                                                              names=["Date", "Location"])
     location_date_combinations_df = pd.DataFrame(index=location_date_combinations).reset_index()
@@ -96,6 +101,7 @@ def prepare_rain_data(
 
     # add state for each location
     state_df = find_state(rain_data_clean['Location'].unique())
+
 
     # update unknown states manually
     state_df.loc[state_df['Location'] == 'Norfolk Island', 'State'] = 'Island'
@@ -109,23 +115,30 @@ def prepare_rain_data(
 
     # add state column to main data frame
     rain_data_clean = rain_data_clean.merge(state_df, on = 'Location', how = 'left')
+    print("Missing dates added.")
 
     # convert location to latitude / longitude data if required
     if location_transformation == True:
-   
+
+        # I had a lot of issues with Nominatim due to limited times I can call the function, therefore it it called before - and written data into the file.
+        # Therefore, I can read values from the file instead of running GeoPy code.
+        
         # use custom function to find latitude and longitude for each weather station
-        latitude, longitude = find_lat_long(rain_data_clean['Location'].unique())
+        latitude, longitude = 
+        find_lat_long(rain_data_clean['Location'].unique())
         
         # Change location to latitude and longitude
         location_coordinates = zip(rain_data_clean['Location'].unique(), latitude, longitude)
         location_coordinates_df = pd.DataFrame(location_coordinates, columns = ['Location', 'Latitude', 'Longitude'])
         rain_data_clean = rain_data_clean.merge(location_coordinates_df, on = 'Location', how = 'left')
         rain_data_clean.drop(columns=['Location'], inplace = True)
-    
+        print("Latitude and longitude data added.")
+        
     # delete incorrect values (change to NaN)
     # delete incorrect Wind Speed value
     rain_data_clean.loc[rain_data_clean['WindSpeed9am'] == 130, 'WindSpeed9am'] = np.nan
     # delete incorrect evaporation value
     rain_data_clean.loc[rain_data_clean['Evaporation'] == 145, 'Evaporation'] = np.nan
+    print("Incorrect data values removed.")
 
     return rain_data_clean

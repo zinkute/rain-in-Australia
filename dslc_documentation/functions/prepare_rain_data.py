@@ -5,9 +5,13 @@ def prepare_rain_data(
     import pandas as pd
     import numpy as np
     from find_state import find_state
+
+    # locate import files
+    data_file_path = "D:\\Projects\\rain-in-Australia\\data\\weatherAUS.csv"
+    latitude_longitude_path = "D:\\Projects\\rain-in-Australia\\data\\Lat_lon_data.csv"
     
     # load original data frame
-    rain_data_clean = pd.read_csv("D:\\Projects\\rain-in-Australia\\data\\weatherAUS.csv")
+    rain_data_clean = pd.read_csv(data_file_path)
     print("Data loaded.")
     
     # update location name
@@ -61,7 +65,6 @@ def prepare_rain_data(
             'NW': 315,
             'NNW': 337.5
         }
-        print("Wind direction transformed to numerical values.")
 
         # Convert compass to degrees
         rain_data_clean['WindGustDir_deg'] = rain_data_clean['WindGustDir'].map(direction_to_degrees_16)
@@ -87,6 +90,7 @@ def prepare_rain_data(
         rain_data_clean.drop(columns=['WindGustDir_deg', 'WindDir9am_deg', 'WindDir3pm_deg',
                             'WindGustDir_rad',  'WindDir9am_rad', 'WindDir3pm_rad', 
                            'WindDir3pm', 'WindGustDir', 'WindDir9am'], inplace=True)
+        print("Wind direction transformed to numerical values.")
         
     # add the rows with missing country-year combinations
     all_dates = pd.date_range(start = '2007-11-01', end = '2017-06-25')
@@ -96,7 +100,7 @@ def prepare_rain_data(
                                                              names=["Date", "Location"])
     location_date_combinations_df = pd.DataFrame(index=location_date_combinations).reset_index()
     rain_data_clean = location_date_combinations_df.merge(rain_data_clean, on=["Date", "Location"], how="left")
-    print("Missing missing country-year combinations added.")
+    print("Missing country-year combinations added.")
     
     # add state for each location
     state_df = find_state(rain_data_clean['Location'].unique())
@@ -113,14 +117,14 @@ def prepare_rain_data(
 
     # add state column to main data frame
     rain_data_clean = rain_data_clean.merge(state_df, on = 'Location', how = 'left')
-    print("Location states added.")
+    print("State information added.")
 
     
     # convert location to latitude / longitude data if required
     if location_transformation == True:
 
         # load the latitude / longitude data from CSV file
-        city_data_coordinates = pd.read_csv("D:\\Projects\\rain-in-Australia\\data\\Lat_lon_data.csv")
+        city_data_coordinates = pd.read_csv(latitude_longitude_path)
         
         # Change location to latitude and longitude
         rain_data_clean = rain_data_clean.merge(city_data_coordinates, on = 'Location', how = 'left')
@@ -134,5 +138,6 @@ def prepare_rain_data(
     # delete incorrect evaporation value
     rain_data_clean.loc[rain_data_clean['Evaporation'] == 145, 'Evaporation'] = np.nan
     print("Incorrect data values removed.")
-
+    print("Data preparation is complete.")
+    
     return rain_data_clean

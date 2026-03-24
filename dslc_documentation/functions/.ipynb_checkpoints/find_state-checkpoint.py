@@ -3,10 +3,12 @@ def find_state(locations):
     import time
     import pandas as pd
     from geopy.geocoders import Nominatim
+    from geopy.extra.rate_limiter import RateLimiter
     
     # Initialize Nominatim
     geolocator = Nominatim(user_agent="geo_state_lookup")
-
+    geocode = RateLimiter(geolocator.geocode, min_delay_seconds = 5)
+    
     # List of location names
     location_names = locations
 
@@ -30,7 +32,7 @@ def find_state(locations):
         results.append({'Location': name, 'State': state})
     
         # Respect Nominatim's usage policy by sleeping between requests
-        time.sleep(1)
+        time.sleep(3)
 
     # Create DataFrame
     state_df = pd.DataFrame(results)
